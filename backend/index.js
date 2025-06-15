@@ -29,9 +29,6 @@ try {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-  setInterval(() => {
-    console.log('Server still alive...');
-  }, 10000);
 
   process.on('unhandledRejection', (reason, promise) => {
     console.error('UNHANDLED REJECTION:', reason);
