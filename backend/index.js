@@ -1,4 +1,3 @@
-require('dotenv').config();
 const result = require('dotenv').config();
 if (result.error) {
   console.error('Failed to load .env file:', result.error);
