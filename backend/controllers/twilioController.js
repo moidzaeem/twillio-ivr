@@ -8,18 +8,19 @@ let session = {}; // TEMP: use DB/session in real-world
 
 exports.startCall = async (req, res) => {
     const { phone, amount } = req.body;
-    session[phone] = { amount }; // Save amount for payment
+
+    // Always initialize session safely
+    session[phone] = { amount };
 
     try {
         const call = await client.calls.create({
-            url: 'http://testivr.habitizr.com/api/twilio/ivr',  // YOUR IVR URL returning TwiML
+            url: `http://testivr.habitizr.com/api/twilio/ivr?phone=${phone}`,  // include phone in query
             to: phone,
             from: process.env.TWILIO_PHONE,
             record: true
         });
 
         console.log('Twilio Call Response:', call);
-
         res.json({ message: 'Call started.', sid: call.sid, status: call.status });
     } catch (error) {
         console.error('Error starting call:', error);
@@ -31,37 +32,60 @@ exports.startCall = async (req, res) => {
 
 exports.ivr = (req, res) => {
     const phone = req.query.phone;
+
+    // Always initialize session (redundant safety)
+    if (!session[phone]) session[phone] = {};
+
     const twiml = new VoiceResponse();
     twiml.say("This call is recorded. Your responses will serve as your authorization.");
+
     const gather = twiml.gather({
         input: 'speech',
-        action: `/api/twilio/capture-name?phone=${phone}`
+        action: `http://testivr.habitizr.com/api/twilio/capture-name?phone=${phone}`,
+        method: 'POST'
     });
+
     gather.say("Please state your full name.");
     res.type('text/xml').send(twiml.toString());
 };
 
 exports.captureName = (req, res) => {
-    console.log('Capture Name:', req.body.SpeechResult);
     const phone = req.query.phone;
-    session[phone].name = req.body.SpeechResult;
+    const name = req.body.SpeechResult;
+
+    if (!session[phone]) session[phone] = {};
+    session[phone].name = name;
+
+    console.log('Captured Name:', name);
+
     const twiml = new VoiceResponse();
     const gather = twiml.gather({
         numDigits: 8,
-        action: `/api/twilio/capture-dob?phone=${phone}`
+        action: `http://testivr.habitizr.com/api/twilio/capture-dob?phone=${phone}`,
+        method: 'POST'
     });
+
     gather.say("Enter your date of birth as MMDDYYYY.");
     res.type('text/xml').send(twiml.toString());
 };
 
+
 exports.captureDOB = (req, res) => {
     const phone = req.query.phone;
-    session[phone].dob = req.body.Digits;
+    const dob = req.body.Digits;
+
+    if (!session[phone]) session[phone] = {};
+    session[phone].dob = dob;
+
+    console.log('Captured DOB:', dob);
+
     const twiml = new VoiceResponse();
     const gather = twiml.gather({
         numDigits: 1,
-        action: `/api/twilio/select-method?phone=${phone}`
+        action: `http://testivr.habitizr.com/api/twilio/select-method?phone=${phone}`,
+        method: 'POST'
     });
+
     gather.say("Press 1 for Credit Card, 2 for Bank Account.");
     res.type('text/xml').send(twiml.toString());
 };
