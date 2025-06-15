@@ -27,3 +27,11 @@ app.use('/api/twilio', twilioRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('UNHANDLED REJECTION:', reason);
+});
+process.on('uncaughtException', err => {
+  console.error('UNCAUGHT EXCEPTION:', err);
+});
