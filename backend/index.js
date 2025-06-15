@@ -24,7 +24,7 @@ try {
   });
 
   // Main API routes
-  app.use('/api/twilio', twilioRoutes);
+  // app.use('/api/twilio', twilioRoutes);
 
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
