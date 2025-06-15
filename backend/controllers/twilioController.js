@@ -42,6 +42,7 @@ exports.ivr = (req, res) => {
 };
 
 exports.captureName = (req, res) => {
+    console.log('Capture Name:', req.body.SpeechResult);
     const phone = req.query.phone;
     session[phone].name = req.body.SpeechResult;
     const twiml = new VoiceResponse();
