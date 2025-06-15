@@ -113,6 +113,7 @@ exports.captureRouting = (req, res) => {
     if (!phone || !digits) return res.status(400).send('Missing params');
 
     session[phone].routingNumber = digits;
+    console.log('Captured routing number:', digits);
 
     const twiml = new VoiceResponse();
     const gather = twiml.gather({
@@ -132,8 +133,9 @@ exports.captureAccount = async (req, res) => {
     if (!phone || !digits) return res.status(400).send('Missing params');
 
     session[phone].accountNumber = digits;
+    console.log('Captured account number:', digits);
 
-    await sendWebhook(phone);
+    // await sendWebhook(phone);
 
     const twiml = new VoiceResponse();
     twiml.say("Thank you. Your bank account details have been submitted.");
