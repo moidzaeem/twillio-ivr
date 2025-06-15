@@ -9,6 +9,11 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+// Test route
+app.get('/', (req, res) => {
+  res.send('Server is running!');
+});
+
 // Main API routes
 app.use('/api/twilio', twilioRoutes);
 
