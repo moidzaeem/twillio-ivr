@@ -1,6 +1,7 @@
 const twilio = require('twilio');
+require('dotenv').config();
 const VoiceResponse = twilio.twiml.VoiceResponse;
-const { processCreditCard, processACH } = require('../utils/paymentProcessor');
+// const { processCreditCard, processACH } = require('../utils/paymentProcessor');
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 let session = {}; // TEMP: use DB/session in real-world
@@ -128,9 +129,9 @@ exports.processPayment = async (req, res) => {
 
     let success = false;
     if (type === 'card') {
-        success = await processCreditCard(data.card, amount);
+        // success = await processCreditCard(data.card, amount);
     } else {
-        success = await processACH(data.routing, data.account, amount);
+        // success = await processACH(data.routing, data.account, amount);
     }
 
     const twiml = new VoiceResponse();
