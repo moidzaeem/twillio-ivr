@@ -1,4 +1,12 @@
 require('dotenv').config();
+const result = require('dotenv').config();
+if (result.error) {
+  console.error('Failed to load .env file:', result.error);
+  process.exit(1); // optional, to stop if env not loaded
+} else {
+  console.log('Environment variables loaded:', result.parsed);
+}
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
