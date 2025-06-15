@@ -12,12 +12,11 @@ exports.startCall = async (req, res) => {
 
     try {
         const call = await client.calls.create({
-  url: 'https://handler.twilio.com/twiml/EH56da93f43af796d856b580e6a7d6de1f',
-  to: phone,
-  from: process.env.TWILIO_PHONE,
-  record: true
-});
-
+            url: 'http://testivr.habitizr.com//api/ivr',  // YOUR IVR URL returning TwiML
+            to: phone,
+            from: process.env.TWILIO_PHONE,
+            record: true
+        });
 
         console.log('Twilio Call Response:', call);
 
@@ -27,6 +26,7 @@ exports.startCall = async (req, res) => {
         res.status(500).json({ message: 'Failed to start call', error: error.message });
     }
 };
+
 
 
 exports.ivr = (req, res) => {

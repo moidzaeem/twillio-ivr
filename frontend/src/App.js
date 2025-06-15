@@ -14,7 +14,7 @@ function App() {
     setMessage('');
 
     try {
-      const res = await axios.post('http://localhost:5000/api/twilio/start-call', {
+      const res = await axios.post('http://testivr.habitizr.com/api/twilio/start-call', {
         phone,
         amount
       });
