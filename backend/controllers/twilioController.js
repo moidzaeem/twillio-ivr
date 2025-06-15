@@ -6,17 +6,27 @@ const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TO
 let session = {}; // TEMP: use DB/session in real-world
 
 exports.startCall = async (req, res) => {
-    
     const { phone, amount } = req.body;
     session[phone] = { amount }; // Save amount for payment
-    await client.calls.create({
-        url: `${process.env.PUBLIC_URL}/api/twilio/ivr?phone=${phone}`,
-        to: phone,
-        from: process.env.TWILIO_PHONE,
-        record: true
-    });
-    res.json({ message: 'Call started.' });
+
+    try {
+        const call = await client.calls.create({
+  url: 'https://handler.twilio.com/twiml/EH56da93f43af796d856b580e6a7d6de1f',
+  to: phone,
+  from: process.env.TWILIO_PHONE,
+  record: true
+});
+
+
+        console.log('Twilio Call Response:', call);
+
+        res.json({ message: 'Call started.', sid: call.sid, status: call.status });
+    } catch (error) {
+        console.error('Error starting call:', error);
+        res.status(500).json({ message: 'Failed to start call', error: error.message });
+    }
 };
+
 
 exports.ivr = (req, res) => {
     const phone = req.query.phone;
