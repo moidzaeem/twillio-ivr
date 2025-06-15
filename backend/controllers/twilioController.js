@@ -12,7 +12,7 @@ exports.startCall = async (req, res) => {
 
     try {
         const call = await client.calls.create({
-            url: 'http://testivr.habitizr.com/api/ivr',  // YOUR IVR URL returning TwiML
+            url: 'http://testivr.habitizr.com/api/twilio/ivr',  // YOUR IVR URL returning TwiML
             to: phone,
             from: process.env.TWILIO_PHONE,
             record: true
