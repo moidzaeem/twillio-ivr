@@ -9,7 +9,7 @@ let session = {};
 
 // Helper to generate full Twilio callback URL
 function getURL(path, phone) {
-    return `https://testivr.habitizr.com/api/twilio/${path}?phone=${phone}`;
+    return `http://testivr.habitizr.com/api/twilio/${path}?phone=${phone}`;
 }
 
 // Start Call
