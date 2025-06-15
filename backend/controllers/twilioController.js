@@ -4,6 +4,8 @@ const axios = require('axios');
 const VoiceResponse = twilio.twiml.VoiceResponse;
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
+const paymentProcessor = require('../utils/paymentProcessor');
+
 // Temporary in-memory session store (replace with DB/cache for production)
 let session = {};
 
@@ -56,7 +58,7 @@ exports.ivr = (req, res) => {
 // Handle Payment Option
 exports.selectMethod = (req, res) => {
     const phone = (req.query.phone || '').trim();
-    
+
     const digit = req.body.Digits;
     if (!phone || !digit) return res.status(400).send('Missing params');
 
@@ -94,17 +96,57 @@ exports.captureCard = async (req, res) => {
     const digits = req.body.Digits;
     if (!phone || !digits) return res.status(400).send('Missing params');
 
+    // Store card number
     session[phone].cardNumber = digits;
-
     console.log('Captured card number:', digits);
 
-    // await sendWebhook(phone);
-
+    // Now ask for expiry date (in MMYY format)
     const twiml = new VoiceResponse();
-    twiml.say("Thank you. Your credit card details have been submitted.");
-    twiml.hangup();
+    const gather = twiml.gather({
+        numDigits: 4, // expecting MMYY format, e.g. 0825
+        action: getURL('capture-expiry', phone),
+        method: 'POST',
+        timeout: 10
+    });
+    gather.say("Please enter your card expiry date in four digits. For example, August twenty five as zero eight two five.");
+
     res.type('text/xml').send(twiml.toString());
 };
+
+exports.captureExpiry = async (req, res) => {
+    const phone = (req.query.phone || '').trim();
+    const digits = req.body.Digits;
+    if (!phone || !digits) return res.status(400).send('Missing params');
+
+    // Store expiry date
+    session[phone].expiryDate = digits;
+    console.log('Captured expiry date:', digits);
+
+    const twiml = new VoiceResponse();
+    twiml.say("Please wait, we're processing payment.");
+
+    paymentProcessor.processCreditCard
+        (session[phone].cardNumber, 49.99, digits) // Example amount
+        .then(success => {
+            if (success) {
+                twiml.say("Payment successful. Thank you!");
+            } else {
+                twiml.say("Payment failed. Please try again later.");
+            }
+        })
+        .catch(error => {
+            console.error('Payment processing error:', error);
+            twiml.say("An error occurred while processing your payment. Please try again later.");
+        });
+    twiml.hangup();
+    res.type('text/xml').send(twiml.toString());
+
+
+
+    // Optionally send to webhook or proceed to next step
+    // await sendWebhook(phone);
+};
+
 
 // Capture Routing Number Input (ACH - Step 1)
 exports.captureRouting = (req, res) => {
