@@ -10,7 +10,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // Main API routes
-// app.use('/api/twilio', twilioRoutes);
+app.use('/api/twilio', twilioRoutes);
 
-const PORT = 5002;
+const PORT = 5001;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
