@@ -1,27 +1,16 @@
-// Load environment variables safely
-const result = require('dotenv').config();
-
-
+require('dotenv').config();
 const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const twilioRoutes = require('./routes/twilioRoutes');
 
 const app = express();
+app.use(cors());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
-// Simple test route
-app.get('/', (req, res) => {
-  res.send('Server is running!');
-});
+// Main API routes
+app.use('/api/twilio', twilioRoutes);
 
-const PORT = process.env.PORT || 5000;
-
-// Start server and listen on port
-app.listen(5001, () => {
-  console.log(`Server running on port 5001`);
-});
-
-// Global error handlers
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('UNHANDLED REJECTION:', reason);
-});
-process.on('uncaughtException', err => {
-  console.error('UNCAUGHT EXCEPTION:', err);
-});
+const PORT = 5001;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
