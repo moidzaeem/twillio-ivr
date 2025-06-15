@@ -37,7 +37,7 @@ exports.startCall = async (req, res) => {
 
 // Entry IVR Menu
 exports.ivr = (req, res) => {
-    const phone = req.query.phone;
+    const phone = (req.query.phone || '').trim();
     if (!phone) return res.status(400).send('Missing phone param');
 
     if (!session[phone]) session[phone] = {};
@@ -55,7 +55,8 @@ exports.ivr = (req, res) => {
 
 // Handle Payment Option
 exports.selectMethod = (req, res) => {
-    const phone = req.query.phone;
+    const phone = (req.query.phone || '').trim();
+    
     const digit = req.body.Digits;
     if (!phone || !digit) return res.status(400).send('Missing params');
 
@@ -89,7 +90,7 @@ exports.selectMethod = (req, res) => {
 
 // Capture Credit Card Input
 exports.captureCard = async (req, res) => {
-    const phone = req.query.phone;
+    const phone = (req.query.phone || '').trim();
     const digits = req.body.Digits;
     if (!phone || !digits) return res.status(400).send('Missing params');
 
@@ -105,7 +106,7 @@ exports.captureCard = async (req, res) => {
 
 // Capture Routing Number Input (ACH - Step 1)
 exports.captureRouting = (req, res) => {
-    const phone = req.query.phone;
+    const phone = (req.query.phone || '').trim();
     const digits = req.body.Digits;
     if (!phone || !digits) return res.status(400).send('Missing params');
 
@@ -124,7 +125,7 @@ exports.captureRouting = (req, res) => {
 
 // Capture Account Number Input (ACH - Step 2)
 exports.captureAccount = async (req, res) => {
-    const phone = req.query.phone;
+    const phone = (req.query.phone || '').trim();
     const digits = req.body.Digits;
     if (!phone || !digits) return res.status(400).send('Missing params');
 
