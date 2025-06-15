@@ -96,7 +96,9 @@ exports.captureCard = async (req, res) => {
 
     session[phone].cardNumber = digits;
 
-    await sendWebhook(phone);
+    console.log('Captured card number:', digits);
+
+    // await sendWebhook(phone);
 
     const twiml = new VoiceResponse();
     twiml.say("Thank you. Your credit card details have been submitted.");
@@ -143,7 +145,7 @@ exports.captureAccount = async (req, res) => {
 async function sendWebhook(phone) {
     const data = { ...session[phone], phone };
     try {
-        await axios.post("http://crm.reliabletiredisposal.online/jotform-webhook", data);
+        await axios.post("https://crm.reliabletiredisposal.online/jotform-webhook", data);
         console.log("Webhook sent successfully:", data);
     } catch (error) {
         console.error("Failed to send webhook:", error.message);
