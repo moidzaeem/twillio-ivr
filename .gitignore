@@ -1,0 +1,50 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+.env
+
+# Logs
+logs/
+*.log
+
+# PM2 logs
+pids/
+*.pid
+*.seed
+
+# React
+frontend/build/
+frontend/node_modules/
+frontend/.env
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# IDEs / editors
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Nginx, SSL or deployment configs (if any)
+certbot/
+certs/
+ssl/
+*.pem
+*.crt
+*.key
+
+# Mac system files
+.AppleDouble
+.LSOverride
+
+# Optional docker
+docker-compose.override.yml
+
+# Coverage reports
+coverage/
+*.lcov
