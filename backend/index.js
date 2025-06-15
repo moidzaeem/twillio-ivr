@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const twilioRoutes = require('./routes/twilioRoutes');
+console.log('>> Booting Express Server...');
 
 const app = express();
 app.use(cors());
