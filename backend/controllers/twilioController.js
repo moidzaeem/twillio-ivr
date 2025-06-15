@@ -6,7 +6,7 @@ const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TO
 let session = {};
 
 function getURL(path, phone) {
-    return `http://testivr.habitizr.com//api/twilio/${path}?phone=${phone}`;
+    return `http://testivr.habitizr.com/api/twilio/${path}?phone=${phone}`;
 }
 
 exports.startCall = async (req, res) => {
