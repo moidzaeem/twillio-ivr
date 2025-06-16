@@ -77,7 +77,7 @@ exports.processACH = async (routingNumber, accountNumber ) => {
         bankAccountType.setAccountType(ApiContracts.BankAccountTypeEnum.CHECKING);  // CHECKING, SAVINGS, BUSINESSCHECKING
         bankAccountType.setRoutingNumber(routingNumber);
         bankAccountType.setAccountNumber(accountNumber);
-        bankAccountType.setNameOnAccount('Jt');
+        bankAccountType.setNameOnAccount('test name');
 
         // Payment type (ACH)
         const paymentType = new ApiContracts.PaymentType();
