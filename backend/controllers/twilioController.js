@@ -63,18 +63,38 @@ exports.ivr = (req, res) => {
     twiml.say(`You may cancel within 3 business days of receiving the agreement. To confirm and proceed, please clearly state your full name, date of birth, and say I AGREE after the tone.`);
 
     // Record voice signature
-    twiml.record({
-        action: getURL('select-method', phone), // After recording, go to payment
-        method: 'POST',
-        timeout: 10,
-        maxLength: 15,
-        playBeep: true,
-        recordingStatusCallback: getURL('recording-status', phone),
-        recordingStatusCallbackMethod: 'POST'
-    });
+twiml.record({
+    action: getURL('voice-confirmed', phone), // <== New endpoint
+    method: 'POST',
+    timeout: 10,
+    maxLength: 15,
+    playBeep: true,
+    recordingStatusCallback: getURL('recording-status', phone),
+    recordingStatusCallbackMethod: 'POST'
+});
+
 
     res.type('text/xml').send(twiml.toString());
 };
+
+exports.voiceConfirmed = (req, res) => {
+    const phone = (req.query.phone || '').trim();
+    if (!phone) return res.status(400).send('Missing phone param');
+
+    const twiml = new VoiceResponse();
+
+    const gather = twiml.gather({
+        numDigits: 1,
+        action: getURL('select-method', phone),
+        method: 'POST',
+        timeout: 20
+    });
+
+    gather.say("Press 1 for Credit Card. Press 2 for Bank Account ACH.");
+
+    res.type('text/xml').send(twiml.toString());
+};
+
 
 // Receive recording status (optional)
 exports.recordingStatus = (req, res) => {
