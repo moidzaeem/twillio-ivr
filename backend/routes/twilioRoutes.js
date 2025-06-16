@@ -6,6 +6,8 @@ const twilioController = require('../controllers/twilioController');
 router.post('/start-call', twilioController.startCall);
 
 // Twilio IVR Callbacks
+router.post('/voice-verification', twilioController.voiceVerification);
+
 router.post('/ivr', twilioController.ivr);
 router.post('/select-method', twilioController.selectMethod);
 router.post('/capture-card', twilioController.captureCard);

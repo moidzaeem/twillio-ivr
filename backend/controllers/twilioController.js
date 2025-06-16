@@ -23,7 +23,7 @@ exports.startCall = async (req, res) => {
 
     try {
         const call = await client.calls.create({
-            url: getURL('ivr', phone),
+            url: getURL('voice-verification', phone),
             to: phone,
             from: process.env.TWILIO_PHONE,
             record: true
@@ -36,6 +36,7 @@ exports.startCall = async (req, res) => {
         res.status(500).json({ message: 'Failed to start call', error: error.message });
     }
 };
+
 
 // Entry IVR Menu
 exports.ivr = (req, res) => {
@@ -51,7 +52,36 @@ exports.ivr = (req, res) => {
         method: 'POST',
         timeout: 20
     });
-    gather.say("Press 1 for Credit Card. Press 2 for Bank Account ACH.");
+    gather.say("Welcome to home renosolutions inc,  Press 1 for Credit Card. Press 2 for Bank Account ACH.");
+    res.type('text/xml').send(twiml.toString());
+};
+
+exports.voiceVerification = (req, res) => {
+    const phone = (req.query.phone || '').trim();
+    if (!phone) return res.status(400).send('Missing phone param');
+
+    if (!session[phone]) session[phone] = {};
+
+    const twiml = new VoiceResponse();
+
+    const gather = twiml.gather({
+        numDigits: 1,
+        action: getURL('ivr', phone),
+        method: 'POST',
+        timeout: 20
+    });
+
+    gather.say("For verification, please state your full name after the tone.");
+    gather.pause({ length: 3 });
+
+    gather.say("Now state your date of birth.");
+    gather.pause({ length: 3 });
+
+    gather.say("Say 'I agree' to confirm your consent.");
+    gather.pause({ length: 2 });
+
+    gather.say("If all information is correct, press 1 to confirm.");
+
     res.type('text/xml').send(twiml.toString());
 };
 
