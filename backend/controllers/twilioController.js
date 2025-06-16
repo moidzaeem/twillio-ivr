@@ -45,10 +45,7 @@ exports.ivr = (req, res) => {
     if (!session[phone]) session[phone] = {};
 
     const twiml = new VoiceResponse();
-
-        twiml.say("This is a call from Home reno.");
-
-        
+    
     const gather = twiml.gather({
         numDigits: 1,
         action: getURL('select-method', phone),
