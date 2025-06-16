@@ -65,7 +65,6 @@ exports.processCreditCard = (cardNumber, amount, expiry) => {
 
 
 exports.processACH = async (routingNumber, accountNumber ) => {
-    console.log('wawow');
     try {
         // Your credentials
         const merchantAuthenticationType = new ApiContracts.MerchantAuthenticationType();
@@ -124,6 +123,7 @@ exports.processACH = async (routingNumber, accountNumber ) => {
                 console.log('Null Response.');
             }
         });
+        return true; // Indicate success
     } catch (error) {
         console.error('Error processing ACH payment:', error);
         return error;
