@@ -63,15 +63,15 @@ exports.ivr = (req, res) => {
     twiml.say(`You may cancel within 3 business days of receiving the agreement. To confirm and proceed, please clearly state your full name, date of birth, and say I AGREE after the tone.`);
 
     // Record voice signature
-twiml.record({
-    action: getURL('voice-confirmed', phone), // <== New endpoint
-    method: 'POST',
-    timeout: 10,
-    maxLength: 15,
-    playBeep: true,
-    recordingStatusCallback: getURL('recording-status', phone),
-    recordingStatusCallbackMethod: 'POST'
-});
+    twiml.record({
+        action: getURL('voice-confirmed', phone), // <== New endpoint
+        method: 'POST',
+        timeout: 10,
+        maxLength: 15,
+        playBeep: true,
+        recordingStatusCallback: getURL('recording-status', phone),
+        recordingStatusCallbackMethod: 'POST'
+    });
 
 
     res.type('text/xml').send(twiml.toString());
@@ -90,7 +90,8 @@ exports.voiceConfirmed = (req, res) => {
         timeout: 20
     });
 
-    gather.say("Press 1 for Credit Card. Press 2 for Bank Account ACH.");
+    gather.say("Okay great, you've been verified. Now you'll just need to enter your payment details to activate your plan. Press 1 for Credit Card, or press 2 for Bank Account ACH.");
+
 
     res.type('text/xml').send(twiml.toString());
 };
