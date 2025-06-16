@@ -12,6 +12,8 @@ router.post('/capture-card', twilioController.captureCard);
 router.post('/capture-routing', twilioController.captureRouting);
 router.post('/capture-account', twilioController.captureAccount);
 router.post('/capture-expiry', twilioController.captureExpiry);
+router.post('/recording-status', twilioController.recordingStatus);
+
 
 
 module.exports = router;

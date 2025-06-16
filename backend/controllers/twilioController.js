@@ -38,6 +38,7 @@ exports.startCall = async (req, res) => {
 };
 
 // Entry IVR Menu
+// Entry IVR Menu (Voice Signature First)
 exports.ivr = (req, res) => {
     const phone = (req.query.phone || '').trim();
     if (!phone) return res.status(400).send('Missing phone param');
@@ -45,16 +46,50 @@ exports.ivr = (req, res) => {
     if (!session[phone]) session[phone] = {};
 
     const twiml = new VoiceResponse();
-    
-    const gather = twiml.gather({
-        numDigits: 1,
-        action: getURL('select-method', phone),
+
+    // Voice Signature Script
+    twiml.say(`Hello. Welcome to World Home Warranty LLC. This is an automated call to confirm your subscription to our complete home protection plan, which covers your home’s heating, cooling, and plumbing systems at a monthly cost.`);
+
+    twiml.say(`By continuing, you consent to receive this automated call from World Home Warranty LLC for the purpose of confirming your subscription.`);
+
+    twiml.say(`You confirm that you were provided all necessary information regarding this plan, including the monthly cost, recurring nature, cancellation policy, and your rights, during a prior call with our representative.`);
+
+    twiml.say(`You confirm that you wish to proceed and authorize the purchase of this plan. You confirm that you are legally authorized and of legal age.`);
+
+    twiml.say(`You understand this is a recurring monthly charge and you will be billed automatically each month until you cancel.`);
+
+    twiml.say(`This call is being recorded for verification and legal purposes. You will receive a paper copy of the agreement within 5 business days.`);
+
+    twiml.say(`You may cancel within 3 business days of receiving the agreement. To confirm and proceed, please clearly state your full name, date of birth, and say I AGREE after the tone.`);
+
+    // Record voice signature
+    twiml.record({
+        action: getURL('select-method', phone), // After recording, go to payment
         method: 'POST',
-        timeout: 20
+        timeout: 10,
+        maxLength: 15,
+        playBeep: true,
+        recordingStatusCallback: getURL('recording-status', phone),
+        recordingStatusCallbackMethod: 'POST'
     });
-    gather.say("Press 1 for Credit Card. Press 2 for Bank Account ACH.");
+
     res.type('text/xml').send(twiml.toString());
 };
+
+// Receive recording status (optional)
+exports.recordingStatus = (req, res) => {
+    const phone = (req.query.phone || '').trim();
+    const recordingUrl = req.body.RecordingUrl;
+
+    if (phone && recordingUrl) {
+        session[phone].voiceSignature = recordingUrl;
+        console.log(`Saved voice signature for ${phone}: ${recordingUrl}`);
+    }
+
+    res.status(200).end();
+};
+
+
 
 // Handle Payment Option
 exports.selectMethod = (req, res) => {
