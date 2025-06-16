@@ -181,7 +181,6 @@ exports.captureAccount = async (req, res) => {
     try {
         const success = await paymentProcessor.processACH(
             session[phone].routingNumber, 
-            49.99, 
             digits
         );
 
