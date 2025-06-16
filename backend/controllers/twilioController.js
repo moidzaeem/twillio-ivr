@@ -39,25 +39,31 @@ exports.startCall = async (req, res) => {
 
 // Entry IVR Menu
 exports.ivr = (req, res) => {
-    const phone = (req.query.phone || '').trim();
-    if (!phone) return res.status(400).send('Missing phone param');
+  const phone = (req.query.phone || '').trim();
+  if (!phone) return res.status(400).send('Missing phone param');
 
-    if (!session[phone]) session[phone] = {};
+  if (!session[phone]) session[phone] = {};
 
-    const twiml = new VoiceResponse();
+  const twiml = new VoiceResponse();
 
-        twiml.say("This is a call from home reno solutions inc for a recurring subscription.");
-
+  try {
+    twiml.say("This is a call from home reno solutions inc for a recurring subscription.");
 
     const gather = twiml.gather({
-        numDigits: 1,
-        action: getURL('select-method', phone),
-        method: 'POST',
-        timeout: 20
+      numDigits: 1,
+      action: getURL('select-method', phone),
+      method: 'POST',
+      timeout: 30,
     });
     gather.say("Press 1 for Credit Card. Press 2 for Bank Account ACH.");
+
     res.type('text/xml').send(twiml.toString());
+  } catch (error) {
+    console.error('Error building TwiML:', error);
+    res.status(500).send('Internal Server Error');
+  }
 };
+
 
 // Handle Payment Option
 exports.selectMethod = (req, res) => {
