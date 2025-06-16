@@ -125,27 +125,27 @@ exports.captureExpiry = async (req, res) => {
     const twiml = new VoiceResponse();
     twiml.say("Please wait, we're processing payment.");
 
-    paymentProcessor.processCreditCard
-        (session[phone].cardNumber, 49.99, digits) // Example amount
-        .then(success => {
-            if (success) {
-                twiml.say("Payment successful. Thank you!");
-            } else {
-                twiml.say("Payment failed. Please try again later.");
-            }
-        })
-        .catch(error => {
-            console.error('Payment processing error:', error);
-            twiml.say("An error occurred while processing your payment. Please try again later.");
-        });
+    try {
+        const success = await paymentProcessor.processCreditCard(
+            session[phone].cardNumber, 
+            49.99, 
+            digits
+        );
+
+        if (success) {
+            twiml.say("Payment successful. Thank you!");
+        } else {
+            twiml.say("Payment failed. Please try again later.");
+        }
+    } catch (error) {
+        console.error('Payment processing error:', error);
+        twiml.say("An error occurred while processing your payment. Please try again later.");
+    }
+
     twiml.hangup();
     res.type('text/xml').send(twiml.toString());
-
-
-
-    // Optionally send to webhook or proceed to next step
-    // await sendWebhook(phone);
 };
+
 
 
 // Capture Routing Number Input (ACH - Step 1)
