@@ -37,7 +37,6 @@ exports.startCall = async (req, res) => {
     }
 };
 
-
 // Entry IVR Menu
 exports.ivr = (req, res) => {
     const phone = (req.query.phone || '').trim();
@@ -52,10 +51,9 @@ exports.ivr = (req, res) => {
         method: 'POST',
         timeout: 20
     });
-    gather.say("Welcome to home renosolutions inc,  Press 1 for Credit Card. Press 2 for Bank Account ACH.");
+    gather.say("Press 1 for Credit Card. Press 2 for Bank Account ACH.");
     res.type('text/xml').send(twiml.toString());
 };
-
 
 // Handle Payment Option
 exports.selectMethod = (req, res) => {
