@@ -45,6 +45,10 @@ exports.ivr = (req, res) => {
     if (!session[phone]) session[phone] = {};
 
     const twiml = new VoiceResponse();
+
+        twiml.say("This is a call from home reno solutions inc for a recurring subscription.");
+
+
     const gather = twiml.gather({
         numDigits: 1,
         action: getURL('select-method', phone),
