@@ -5,6 +5,18 @@ const VoiceResponse = twilio.twiml.VoiceResponse;
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 const paymentProcessor = require('../utils/paymentProcessor');
+const fs = require('fs');
+const { google } = require('googleapis');
+
+
+const serviceAccount = require('../google-credentials.json'); 
+
+
+const auth = new google.auth.GoogleAuth({
+    credentials: serviceAccount,
+    scopes: ['https://www.googleapis.com/auth/drive']
+});
+const drive = google.drive({ version: 'v3', auth });
 
 // Temporary in-memory session store (replace with DB/cache for production)
 let session = {};
@@ -98,13 +110,21 @@ exports.voiceConfirmed = (req, res) => {
 
 
 // Receive recording status (optional)
-exports.recordingStatus = (req, res) => {
+exports.recordingStatus = async (req, res) => {
     const phone = (req.query.phone || '').trim();
     const recordingUrl = req.body.RecordingUrl;
 
     if (phone && recordingUrl) {
         session[phone].voiceSignature = recordingUrl;
         console.log(`Saved voice signature for ${phone}: ${recordingUrl}`);
+
+        try {
+            await uploadRecordingToDrive(phone, recordingUrl);
+            console.log('Recording uploaded to Google Drive successfully.');
+        } catch (err) {
+            console.error('Failed to upload recording to Google Drive', err);
+        }
+
     }
 
     res.type('text/xml').send();
@@ -273,3 +293,60 @@ async function sendWebhook(phone) {
         console.error("Failed to send webhook:", error.message);
     }
 }
+
+
+async function uploadRecordingToDrive(phone, recordingUrl) {
+    // Step 1: Download recording as stream
+    const response = await axios({
+        url: recordingUrl + '.mp3',  // Twilio allows adding file format
+        method: 'GET',
+        responseType: 'stream'
+    });
+
+    // Step 2: Get or create folder for phone number
+    const folderId = await getOrCreateFolder(phone);
+
+    // Step 3: Upload file to folder
+    const fileMetadata = {
+        name: `recording-${Date.now()}.mp3`,
+        parents: [folderId]
+    };
+    const media = {
+        mimeType: 'audio/mpeg',
+        body: response.data
+    };
+
+    await drive.files.create({
+        resource: fileMetadata,
+        media: media,
+        fields: 'id'
+    });
+}
+
+// Helper: create folder if not exist
+async function getOrCreateFolder(folderName) {
+    // Search for existing folder
+    const res = await drive.files.list({
+        q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+        fields: 'files(id, name)',
+        spaces: 'drive'
+    });
+
+    if (res.data.files.length > 0) {
+        return res.data.files[0].id;
+    }
+
+    // Create folder if not exists
+    const folderMetadata = {
+        name: folderName,
+        mimeType: 'application/vnd.google-apps.folder'
+    };
+
+    const folder = await drive.files.create({
+        resource: folderMetadata,
+        fields: 'id'
+    });
+
+    return folder.data.id;
+}
+
