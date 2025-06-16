@@ -58,9 +58,16 @@ exports.ivr = (req, res) => {
 // Handle Payment Option
 exports.selectMethod = (req, res) => {
     const phone = (req.query.phone || '').trim();
-
     const digit = req.body.Digits;
-    if (!phone || !digit) return res.status(400).send('Missing params');
+
+    console.log('Received phone:', phone);
+    console.log('Received digit:', digit);
+    console.log('Full body:', req.body);
+
+    if (!phone || !digit) {
+        console.error("Missing params!", { phone, digit });
+        return res.status(400).send('Missing params');
+    }
 
     const twiml = new VoiceResponse();
 
@@ -89,6 +96,7 @@ exports.selectMethod = (req, res) => {
 
     res.type('text/xml').send(twiml.toString());
 };
+
 
 // Capture Credit Card Input
 exports.captureCard = async (req, res) => {
@@ -127,8 +135,8 @@ exports.captureExpiry = async (req, res) => {
 
     try {
         const success = await paymentProcessor.processCreditCard(
-            session[phone].cardNumber, 
-            49.99, 
+            session[phone].cardNumber,
+            49.99,
             digits
         );
 
@@ -180,7 +188,7 @@ exports.captureAccount = async (req, res) => {
 
     try {
         const success = await paymentProcessor.processACH(
-            session[phone].routingNumber, 
+            session[phone].routingNumber,
             digits
         );
 
