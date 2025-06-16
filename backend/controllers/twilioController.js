@@ -331,28 +331,29 @@ async function uploadRecordingToDrive(phone, recordingUrl) {
 }
 
 // Helper: create folder if not exist
-// async function getOrCreateFolder(folderName) {
-//     // Search for existing folder
-//     const res = await drive.files.list({
-//         q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-//         fields: 'files(id, name)',
-//         spaces: 'drive'
-//     });
+async function getOrCreateFolder(folderName) {
+    // Search for existing folder
+    const res = await drive.files.list({
+        q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+        fields: 'files(id, name)',
+        spaces: 'drive'
+    });
 
-//     if (res.data.files.length > 0) {
-//         return res.data.files[0].id;
-//     }
+    if (res.data.files.length > 0) {
+        return res.data.files[0].id;
+    }
 
-//     // Create folder if not exists
-//     const folderMetadata = {
-//         name: folderName,
-//         mimeType: 'application/vnd.google-apps.folder'
-//     };
+    // Create folder if not exists
+    const folderMetadata = {
+        name: folderName,
+        mimeType: 'application/vnd.google-apps.folder'
+    };
 
-//     const folder = await drive.files.create({
-//         resource: folderMetadata,
-//         fields: 'id'
-//     });
+    const folder = await drive.files.create({
+        resource: folderMetadata,
+        fields: 'id'
+    });
 
-//     return folder.data.id;
-// }
+    return folder.data.id;
+}
+
