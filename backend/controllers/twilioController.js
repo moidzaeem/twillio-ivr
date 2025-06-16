@@ -176,11 +176,25 @@ exports.captureAccount = async (req, res) => {
 
     session[phone].accountNumber = digits;
     console.log('Captured account number:', digits);
-
-    // await sendWebhook(phone);
-
     const twiml = new VoiceResponse();
-    twiml.say("Thank you. Your bank account details have been submitted.");
+
+    try {
+        const success = await paymentProcessor.processACH(
+            session[phone].routingNumber, 
+            49.99, 
+            digits
+        );
+
+        if (success) {
+            twiml.say("Payment successful. Thank you!");
+        } else {
+            twiml.say("Payment failed. Please try again later.");
+        }
+    } catch (error) {
+        console.error('Payment processing error:', error);
+        twiml.say("An error occurred while processing your payment. Please try again later.");
+    }
+
     twiml.hangup();
     res.type('text/xml').send(twiml.toString());
 };
