@@ -297,11 +297,15 @@ async function sendWebhook(phone) {
 
 async function uploadRecordingToDrive(phone, recordingUrl) {
     // Step 1: Download recording as stream
-    const response = await axios({
-        url: recordingUrl + '.mp3',  // Twilio allows adding file format
-        method: 'GET',
-        responseType: 'stream'
-    });
+  const response = await axios({
+    url: recordingUrl + '.mp3',
+    method: 'GET',
+    responseType: 'stream',
+    auth: {
+        username: process.env.TWILIO_ACCOUNT_SID,
+        password: process.env.TWILIO_AUTH_TOKEN
+    }
+});
 
     // Step 2: Get or create folder for phone number
     const folderId = await getOrCreateFolder(phone);
