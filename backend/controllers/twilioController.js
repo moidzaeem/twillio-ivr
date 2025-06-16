@@ -64,26 +64,54 @@ exports.voiceVerification = (req, res) => {
 
     const twiml = new VoiceResponse();
 
-    const gather = twiml.gather({
-        numDigits: 1,
-        action: getURL('ivr', phone),
+    // Record user response (voice) for name, DOB, and consent
+    twiml.say("For verification, please clearly state your full name, your date of birth, and say 'I agree' to confirm.");
+    twiml.record({
+        action: getURL('verify-recording', phone),
         method: 'POST',
-        timeout: 20
+        transcribe: true,
+        transcribeCallback: getURL('verify-transcription', phone),
+        maxLength: 20,
+        timeout: 3,
+        playBeep: true
     });
-
-    gather.say("For verification, please state your full name after the tone.");
-    gather.pause({ length: 3 });
-
-    gather.say("Now state your date of birth.");
-    gather.pause({ length: 3 });
-
-    gather.say("Say 'I agree' to confirm your consent.");
-    gather.pause({ length: 2 });
-
-    gather.say("If all information is correct, press 1 to confirm.");
 
     res.type('text/xml').send(twiml.toString());
 };
+
+// POST /verify-recording
+exports.verifyRecording = (req, res) => {
+    const phone = (req.query.phone || '').trim();
+    const { RecordingUrl } = req.body;
+
+    console.log('✅ [Recording] URL:', RecordingUrl);
+
+    const twiml = new VoiceResponse();
+
+    twiml.say("Thank you. Your response has been recorded. We will review the information.");
+
+    if (phone) {
+        // Redirect caller back to IVR flow
+        twiml.redirect({ method: 'POST' }, getURL('ivr', phone));
+    } else {
+        twiml.say("Goodbye.");
+    }
+
+    res.type('text/xml').send(twiml.toString());
+};
+
+// POST /verify-transcription
+exports.verifyTranscription = (req, res) => {
+    const { TranscriptionText, RecordingUrl } = req.body;
+
+    console.log('📝 [Transcription] Text:', TranscriptionText);
+    console.log('🎧 [Recording] URL:', RecordingUrl);
+
+    // Optional: Save to DB or session[phone] if phone info is available
+
+    res.sendStatus(200); // Acknowledge receipt to Twilio
+};
+
 
 // Handle Payment Option
 exports.selectMethod = (req, res) => {
