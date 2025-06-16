@@ -4,7 +4,6 @@ import './App.css';
 
 function App() {
   const [phone, setPhone] = useState('+17084987333');
-  const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -15,8 +14,7 @@ function App() {
 
     try {
       const res = await axios.post('http://testivr.habitizr.com/api/twilio/start-call', {
-        phone,
-        amount
+        phone
       });
       setMessage(res.data.message);
     } catch (err) {
@@ -43,17 +41,6 @@ function App() {
           />
         </div>
 
-        <div className="mb-3">
-          <label className="form-label">Amount ($)</label>
-          <input
-            type="number"
-            className="form-control"
-            placeholder="Amount"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            required
-          />
-        </div>
 
         <button type="submit" className="btn btn-primary w-100" disabled={loading}>
           {loading ? 'Calling...' : 'Start IVR Call'}
