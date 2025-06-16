@@ -23,7 +23,7 @@ exports.startCall = async (req, res) => {
 
     try {
         const call = await client.calls.create({
-            url: getURL('voice-verification', phone),
+            url: getURL('ivr', phone),
             to: phone,
             from: process.env.TWILIO_PHONE,
             record: true
