@@ -106,7 +106,7 @@ exports.recordingStatus = (req, res) => {
         console.log(`Saved voice signature for ${phone}: ${recordingUrl}`);
     }
 
-    res.status(200).end();
+    res.type('text/xml').send();
 };
 
 
