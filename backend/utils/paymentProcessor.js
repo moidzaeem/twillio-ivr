@@ -34,6 +34,7 @@ exports.processCreditCard = (cardNumber, amount, expiry) => {
             createRequest.setTransactionRequest(transactionRequest);
 
             const ctrl = new ApiControllers.CreateTransactionController(createRequest.getJSON());
+            ctrl.setEnvironment(sdkConstants.endpoint.production);  // Use SANDBOX for testing
             // ctrl.setEnvironment('https://apitest.authorize.net/xml/v1/request.api');  // SANDBOX
 
             ctrl.execute(() => {
@@ -96,6 +97,7 @@ exports.processACH = async (routingNumber, accountNumber ) => {
         // Controller to execute the API request
         const ctrl = new ApiControllers.CreateTransactionController(createRequest.getJSON());
         // ctrl.setEnvironment('https://apitest.authorize.net/xml/v1/request.api');  // SANDBOX
+            ctrl.setEnvironment(sdkConstants.endpoint.production);  // Use SANDBOX for testing
 
         // Use SANDBOX for testing
         ctrl.execute(() => {
