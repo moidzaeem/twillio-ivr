@@ -65,52 +65,48 @@ exports.processCreditCard = (cardNumber, amount, expiry) => {
 };
 
 
-exports.processACH = (routingNumber, accountNumber) => {
-    return new Promise((resolve, reject) => {
-        try {
-            const dp = new DirectPost(process.env.RATE_TRACKER);
+exports.processACH = async (routingNumber, accountNumber) => {
+    try {
+        const dp = new DirectPost(process.env.RATE_TRACKER);
 
-            const billingInfo = {
-                first_name: 'Jane',
-                last_name: 'Doe',
-                address1: '456 Elm St',
-                city: 'Chicago',
-                state: 'IL',
-                zip: '60601'
-            };
+        const billingInfo = {
+            first_name: 'Jane',
+            last_name: 'Doe',
+            address1: '456 Elm St',
+            city: 'Chicago',
+            state: 'IL',
+            zip: '60601'
+        };
 
-            const shippingInfo = {
-                shipping_first_name: 'Jane',
-                shipping_last_name: 'Doe',
-                shipping_address1: '456 Elm St',
-                shipping_city: 'Chicago',
-                shipping_state: 'IL',
-                shipping_zip: '60601'
-            };
+        const shippingInfo = {
+            shipping_first_name: 'Jane',
+            shipping_last_name: 'Doe',
+            shipping_address1: '456 Elm St',
+            shipping_city: 'Chicago',
+            shipping_state: 'IL',
+            shipping_zip: '60601'
+        };
 
-            dp.setBilling(billingInfo);
-            dp.setShipping(shippingInfo);
+        // Uncomment if you want to set billing/shipping
+        // dp.setBilling(billingInfo);
+        // dp.setShipping(shippingInfo);
 
-            const amount = '49.99';
-            const checkName = 'Jane Doe';
-            const accountType = 'checking';
+        const amount = '49.99';
+        const checkName = 'Jane Doe';
+        const accountType = 'checking';
 
-            // Modify the DirectPost class to accept a callback or promise if needed.
-            dp.doACHRecurring(
-                amount,
-                checkName,
-                routingNumber,
-                accountNumber,
-                accountType,
-                (err, response) => {
-                    if (err) return reject(err);
-                    return resolve(response);
-                }
-            );
-        } catch (err) {
-            console.error('Error processing ACH payment:', err.message);
-            reject(err);
-        }
-    });
+        const response = await dp.doACHRecurring(
+            amount,
+            checkName,
+            routingNumber,
+            accountNumber,
+            accountType
+        );
+
+        console.log('✅ ACH Recurring Success:', response);
+
+    } catch (err) {
+        console.error('❌ Error processing ACH payment:', err.message);
+    }
 };
 

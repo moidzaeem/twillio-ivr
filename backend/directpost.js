@@ -4,6 +4,8 @@ const querystring = require('querystring');
 class DirectPost {
     constructor(securityKey) {
         this.securityKey = securityKey;
+        this.billing = {};
+        this.shipping = {};
     }
 
     setBilling(billingInformation) {
@@ -37,11 +39,11 @@ class DirectPost {
         this.shipping = shippingInformation;
     }
 
-    doACH(amount, checkName, routingNumber, accountNumber, accountType = 'checking') {
+    async doACH(amount, checkName, routingNumber, accountNumber, accountType = 'checking') {
         const requestOptions = {
             type: 'sale',
-            amount: amount,
             payment: 'check',
+            amount,
             checkname: checkName,
             checkaba: routingNumber,
             checkaccount: accountNumber,
@@ -51,10 +53,33 @@ class DirectPost {
             security_key: this.securityKey
         };
 
-        this._doRequest(requestOptions);
+        return this._doRequest(requestOptions);
     }
 
+    async doACHRecurring(amount, checkName, routingNumber, accountNumber, accountType = 'checking') {
+        const requestOptions = {
+            type: 'sale',
+            payment: 'check',
+            amount,
+            checkname: checkName,
+            checkaba: routingNumber,
+            checkaccount: accountNumber,
+            account_type: accountType,
 
+            // Recurring billing params
+            recurring: 'add_subscription',
+            plan_payments: 12,          // 12 monthly payments
+            plan_amount: amount,        // each payment amount
+            month_frequency: 1,         // every month
+            day_of_month: 15,           // ✅ CHARGE ON THE 15th EACH MONTH
+
+            ...this.billing,
+            ...this.shipping,
+            security_key: this.securityKey
+        };
+
+        return this._doRequest(requestOptions);
+    }
 
     _doRequest(postData) {
         const hostName = 'ratetracker.transactiongateway.com';
@@ -63,7 +88,7 @@ class DirectPost {
 
         const options = {
             hostname: hostName,
-            path: path,
+            path,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -71,60 +96,33 @@ class DirectPost {
             }
         };
 
-        const req = https.request(options, (res) => {
-            let responseData = '';
+        return new Promise((resolve, reject) => {
+            const req = https.request(options, (res) => {
+                let responseData = '';
 
-            res.setEncoding('utf8');
-            res.on('data', (chunk) => {
-                responseData += chunk;
+                res.setEncoding('utf8');
+                res.on('data', (chunk) => {
+                    responseData += chunk;
+                });
+
+                res.on('end', () => {
+                    try {
+                        const parsedData = querystring.parse(responseData);
+                        resolve(parsedData);
+                    } catch (error) {
+                        reject(new Error('Failed to parse response: ' + error.message));
+                    }
+                });
             });
 
-            res.on('end', () => {
-                try {
-                    const parsedData = querystring.parse(responseData);
-                    console.log('✅ Parsed JSON-like response:', parsedData);
-                } catch (error) {
-                    console.error('❌ Failed to parse response:', error);
-                    console.log('Raw response:', responseData);
-                }
+            req.on('error', (e) => {
+                reject(new Error('Request error: ' + e.message));
             });
-        });
 
-        req.on('error', (e) => {
-            console.error(`Request error: ${e.message}`);
+            req.write(postString);
+            req.end();
         });
-
-        req.write(postString);
-        req.end();
     }
-
-    doACHRecurring(amount, checkName, routingNumber, accountNumber, accountType = 'checking') {
-    const requestOptions = {
-        type: 'sale',
-        payment: 'check',
-        amount: amount,
-        checkname: checkName,
-        checkaba: routingNumber,
-        checkaccount: accountNumber,
-        account_type: accountType,
-
-        // Recurring billing params
-        recurring: 'add_subscription',
-        plan_payments: 12,          // e.g., 12 monthly payments
-        plan_amount: amount,        // each payment amount
-        month_frequency: 1,         // every month
-        day_of_month: 1,             // ✅ CHARGE ON THE 15th EACH MONTH
-
-
-        ...this.billing,
-        ...this.shipping,
-        security_key: this.securityKey
-    };
-
-    this._doRequest(requestOptions);
-}
-
-
 }
 
 module.exports = DirectPost;
