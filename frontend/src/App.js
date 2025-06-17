@@ -13,7 +13,7 @@ function App() {
     setMessage('');
 
     try {
-      const res = await axios.post('https://testivr.habitizr.com/api/twilio/start-call', {
+      const res = await axios.post('https://backend-ivr.worldhomeapplication.com/api/twilio/start-call', {
         phone
       });
       setMessage(res.data.message);
