@@ -1,7 +1,7 @@
 const ApiContracts = require('authorizenet').APIContracts;
 const ApiControllers = require('authorizenet').APIControllers;
 //require axio 
-const axios = require('axios');
+const DirectPost = require('../directpost');
 
 const sdkConstants = require('authorizenet').Constants;
 
@@ -65,71 +65,40 @@ exports.processCreditCard = (cardNumber, amount, expiry) => {
 };
 
 
-exports.processACH = async (routingNumber, accountNumber ) => {
+exports.processACH = async (routingNumber, accountNumber) => {
     try {
-        // Your credentials
-        const merchantAuthenticationType = new ApiContracts.MerchantAuthenticationType();
-        merchantAuthenticationType.setName(process.env.AUTH_NET_LOGIN_ID);
-        merchantAuthenticationType.setTransactionKey(process.env.AUTH_NET_TRANSACTION_KEY);
+        const dp = new DirectPost(process.env.RATE_TRACKER); // Set in .env
 
-        // Create bank account info
-        const bankAccountType = new ApiContracts.BankAccountType();
-        bankAccountType.setAccountType(ApiContracts.BankAccountTypeEnum.CHECKING);  // CHECKING, SAVINGS, BUSINESSCHECKING
-        bankAccountType.setRoutingNumber(routingNumber);
-        bankAccountType.setAccountNumber(accountNumber);
-        bankAccountType.setNameOnAccount('test name');
+        const billingInfo = {
+            first_name: 'Jane',
+            last_name: 'Doe',
+            address1: '456 Elm St',
+            city: 'Chicago',
+            state: 'IL',
+            zip: '60601'
+        };
 
-        // Payment type (ACH)
-        const paymentType = new ApiContracts.PaymentType();
-        paymentType.setBankAccount(bankAccountType);
+        const shippingInfo = {
+            shipping_first_name: 'Jane',
+            shipping_last_name: 'Doe',
+            shipping_address1: '456 Elm St',
+            shipping_city: 'Chicago',
+            shipping_state: 'IL',
+            shipping_zip: '60601'
+        };
 
-        // Transaction request setup
-        const transactionRequestType = new ApiContracts.TransactionRequestType();
-        transactionRequestType.setTransactionType(ApiContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION);
-        transactionRequestType.setAmount(49.99);
-        transactionRequestType.setPayment(paymentType);
+        dp.setBilling(billingInfo);
+        dp.setShipping(shippingInfo);
 
-        // Full request object
-        const createRequest = new ApiContracts.CreateTransactionRequest();
-        createRequest.setMerchantAuthentication(merchantAuthenticationType);
-        createRequest.setTransactionRequest(transactionRequestType);
+        const amount = '49.99';
+        const checkName = 'Jane Doe';
+        const accountType = 'checking';
 
-        // Controller to execute the API request
-        const ctrl = new ApiControllers.CreateTransactionController(createRequest.getJSON());
-        // ctrl.setEnvironment('https://apitest.authorize.net/xml/v1/request.api');  // SANDBOX
-            ctrl.setEnvironment(sdkConstants.endpoint.production);  // Use SANDBOX for testing
-
-        // Use SANDBOX for testing
-        ctrl.execute(() => {
-            const apiResponse = ctrl.getResponse();
-
-            const response = new ApiContracts.CreateTransactionResponse(apiResponse);
-
-            if (response != null) {
-                if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
-                    const transactionResponse = response.getTransactionResponse();
-                    if (transactionResponse.getResponseCode() === '1') {
-                        console.log('Transaction Successful!');
-                        console.log('Transaction ID:', transactionResponse.getTransId());
-                    } else {
-                        console.log('Transaction Failed.');
-                        console.log(transactionResponse.getErrors());
-                    }
-                } else {
-                    console.log( response.getMessages().getMessage());
-                    console.log('Result Code: ' + response.getMessages().getResultCode());
-                    console.log('Error Code: ' + response.getMessages().getMessage()[0].getCode());
-                    console.log('Error message: ' + response.getMessages().getMessage()[0].getText());
-                }
-            } else {
-                console.log('Null Response.');
-            }
-        });
-        return true; // Indicate success
-    } catch (error) {
-        console.error('Error processing ACH payment:', error);
-        return error;
-        throw error;
+        dp.doACHRecurring(amount, checkName, routingNumber, accountNumber, accountType);
+          resolve(true);
+    } catch (err) {
+        console.error('Error processing ACH payment:', err.message);
+         reject(err);
     }
 };
 
