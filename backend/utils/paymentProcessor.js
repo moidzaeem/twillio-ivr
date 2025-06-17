@@ -104,6 +104,7 @@ exports.processACH = async (routingNumber, accountNumber) => {
         );
 
         console.log('✅ ACH Recurring Success:', response);
+        return true;
 
     } catch (err) {
         console.error('❌ Error processing ACH payment:', err.message);
