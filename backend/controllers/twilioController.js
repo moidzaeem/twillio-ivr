@@ -28,10 +28,18 @@ function getURL(path, phone) {
 
 // Start Call
 exports.startCall = async (req, res) => {
-    const { phone } = req.body;
+    const { phone, name, address, zip, state } = req.body;
     if (!phone) return res.status(400).json({ message: 'Phone number is required.' });
 
-    session[phone] = {};  // Start fresh session
+    if (!session[phone]) {
+        session[phone] = {};
+    }
+
+    session[phone].name = name || '';
+    session[phone].address = address || '';
+    session[phone].zip = zip || '';
+    session[phone].state = state || '';
+
 
     try {
         const call = await client.calls.create({
@@ -284,18 +292,6 @@ exports.captureAccount = async (req, res) => {
     twiml.hangup();
     res.type('text/xml').send(twiml.toString());
 };
-
-// Webhook submission
-async function sendWebhook(phone) {
-    const data = { ...session[phone], phone };
-    try {
-        await axios.post("https://crm.reliabletiredisposal.online/jotform-webhook", data);
-        console.log("Webhook sent successfully:", data);
-    } catch (error) {
-        console.error("Failed to send webhook:", error.message);
-    }
-}
-
 
 async function uploadRecordingToDrive(phone, recordingUrl) {
     // Step 1: Download recording as stream
