@@ -112,7 +112,7 @@ exports.voiceConfirmed = (req, res) => {
         timeout: 20
     });
 
-    gather.say("Okay great, you've been verified. Now you'll just need to enter your payment details to activate your plan. Press 1 for Credit Card, or press 2 for Bank Account ACH.");
+    gather.say("Okay great, you've been verified. Now you'll just need to enter your payment details to activate your plan. Press 1 for Credit Card, press 2 for Bank Account ACH, or press 3 to hear this menu again.");
 
 
     res.type('text/xml').send(twiml.toString());
@@ -176,10 +176,20 @@ exports.selectMethod = (req, res) => {
             timeout: 20
         });
         gather.say("Please enter your 9-digit routing number.");
+    } else if (digit === '3') {
+        // Replay the payment method menu
+        const gather = twiml.gather({
+            numDigits: 1,
+            action: getURL('select-method', phone),
+            method: 'POST',
+            timeout: 20
+        });
+        gather.say("Okay. Please listen carefully. Press 1 for Credit Card, press 2 for Bank Account ACH, or press 3 to hear this menu again.");
     } else {
         twiml.say("Invalid option selected. Goodbye.");
         twiml.hangup();
     }
+
 
     res.type('text/xml').send(twiml.toString());
 };
