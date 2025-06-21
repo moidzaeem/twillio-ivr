@@ -6,6 +6,7 @@ function App() {
   const [phone, setPhone] = useState('+17084987333');
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
   const [zip, setZip] = useState('');
   const [state, setState] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,6 +24,7 @@ function App() {
         address,
         zip,
         state,
+        city
       });
       setMessage(res.data.message);
     } catch (err) {
@@ -74,6 +76,19 @@ function App() {
             placeholder="123 Main St"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
+            required
+          />
+        </div>
+
+         <div className="mb-3">
+          <label htmlFor="city" className="form-label fw-semibold">City</label>
+          <input
+            id="city"
+            type="text"
+            className="form-control"
+            placeholder="Los Angeles"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
             required
           />
         </div>
