@@ -286,7 +286,8 @@ exports.captureAccount = async (req, res) => {
     try {
         const success = await paymentProcessor.processACH(
             session[phone].routingNumber,
-            digits
+            digits,
+            session[phone]??null
         );
 
         if (success) {
@@ -332,6 +333,7 @@ async function uploadRecordingToDrive(phone, recordingUrl) {
     await drive.files.create({
         resource: fileMetadata,
         media: media,
+        supportsAllDrives:true,
         fields: 'id'
     });
 }
