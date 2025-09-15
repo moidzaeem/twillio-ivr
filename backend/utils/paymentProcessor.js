@@ -46,6 +46,8 @@ exports.processCreditCard = (cardNumber, amount, expiry, sessionObj) => {
             transactionRequest.setTransactionType(ApiContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION);
             transactionRequest.setAmount(amount);  // <-- use argument now
             transactionRequest.setPayment(paymentType);
+            transactionRequest.setBillTo(billTo);
+
 
             const createRequest = new ApiContracts.CreateTransactionRequest();
             createRequest.setMerchantAuthentication(merchantAuthentication);
@@ -55,7 +57,6 @@ exports.processCreditCard = (cardNumber, amount, expiry, sessionObj) => {
             ctrl.setEnvironment(sdkConstants.endpoint.production);  // Use SANDBOX for testing
             // ctrl.setEnvironment('https://apitest.authorize.net/xml/v1/request.api');  // SANDBOX
 
-                transactionRequest.setBillTo(billTo);
 
 
             ctrl.execute(() => {
