@@ -38,7 +38,7 @@ function getURL(path, phone) {
 
 // Start Call
 exports.startCall = async (req, res) => {
-    const { phone, name, address, zip, state } = req.body;
+    const { phone, name, address, zip, state, city } = req.body;
     if (!phone) return res.status(400).json({ message: 'Phone number is required.' });
 
     if (!session[phone]) {
@@ -51,6 +51,8 @@ exports.startCall = async (req, res) => {
     session[phone].state = state || '';
     session[phone].state = state || '';
     session[phone].city = city || '';
+
+    console.log('Session Data:', JSON.stringify(session[phone]));
 
     try {
         const call = await client.calls.create({
