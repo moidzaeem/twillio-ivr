@@ -35,6 +35,12 @@ exports.processCreditCard = (cardNumber, amount, expiry, sessionObj) => {
             billTo.setState(sessionObj.state);
             billTo.setZip(sessionObj.zip);
 
+            //set Bill to
+
+
+
+
+
 
             const transactionRequest = new ApiContracts.TransactionRequestType();
             transactionRequest.setTransactionType(ApiContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION);
@@ -48,6 +54,9 @@ exports.processCreditCard = (cardNumber, amount, expiry, sessionObj) => {
             const ctrl = new ApiControllers.CreateTransactionController(createRequest.getJSON());
             ctrl.setEnvironment(sdkConstants.endpoint.production);  // Use SANDBOX for testing
             // ctrl.setEnvironment('https://apitest.authorize.net/xml/v1/request.api');  // SANDBOX
+
+                transactionRequest.setBillTo(billTo);
+
 
             ctrl.execute(() => {
                 try {
