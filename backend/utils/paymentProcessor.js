@@ -28,8 +28,8 @@ exports.processCreditCard = (cardNumber, amount, expiry, sessionObj) => {
 
             // 🆕 Customer Billing Info
             const billTo = new ApiContracts.CustomerAddressType();
-            billTo.setFirstName(sessionObj.name);
-            // billTo.setLastName(sessionObj.lastName);
+            billTo.setFirstName(sessionObj.firstName);
+            billTo.setLastName(sessionObj.firstName?.split(' ')[1] || '');
             billTo.setAddress(sessionObj.address);
             billTo.setCity(sessionObj.city);
             billTo.setState(sessionObj.state);

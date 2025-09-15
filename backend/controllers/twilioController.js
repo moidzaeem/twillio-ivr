@@ -29,7 +29,8 @@ function getURL(path, phone) {
         name: s.name || '',
         address: s.address || '',
         zip: s.zip || '',
-        state: s.state || ''
+        state: s.state || '',
+        city: s.city || ''
     });
 
     return `https://backend-ivr.worldhomeapplication.com/api/twilio/${path}?${params.toString()}`;
@@ -78,6 +79,7 @@ exports.ivr = (req, res) => {
     const address = (req.query.address || '').trim();
     const zip = (req.query.zip || '').trim();
     const state = (req.query.state || '').trim();
+    const city = (req.query.city || '').trim();
 
 
 
@@ -88,7 +90,8 @@ exports.ivr = (req, res) => {
         name,
         address,
         zip,
-        state
+        state,
+        city
     };
     console.log('Session Data:', JSON.stringify(session[phone]));
 
