@@ -49,7 +49,8 @@ exports.startCall = async (req, res) => {
     session[phone].address = address || '';
     session[phone].zip = zip || '';
     session[phone].state = state || '';
-
+    session[phone].state = state || '';
+    session[phone].city = city || '';
 
     try {
         const call = await client.calls.create({
