@@ -23,7 +23,16 @@ var session = {};
 
 // Helper to generate full Twilio callback URL
 function getURL(path, phone) {
-    return `https://backend-ivr.worldhomeapplication.com/api/twilio/${path}?phone=${phone}`;
+    const s = session[phone] || {};
+    const params = new URLSearchParams({
+        phone,
+        name: s.name || '',
+        address: s.address || '',
+        zip: s.zip || '',
+        state: s.state || ''
+    });
+
+    return `https://backend-ivr.worldhomeapplication.com/api/twilio/${path}?${params.toString()}`;
 }
 
 // Start Call
@@ -65,7 +74,23 @@ exports.ivr = (req, res) => {
     const phone = (req.query.phone || '').trim();
     if (!phone) return res.status(400).send('Missing phone param');
 
+    const name = (req.query.name || '').trim();
+    const address = (req.query.address || '').trim();
+    const zip = (req.query.zip || '').trim();
+    const state = (req.query.state || '').trim();
+
+
+
     if (!session[phone]) session[phone] = {};
+
+    session[phone] = {
+        ...session[phone], // keep existing (like cardNumber, expiry later)
+        name,
+        address,
+        zip,
+        state
+    };
+    console.log('Session Data:', JSON.stringify(session[phone]));
 
     const twiml = new VoiceResponse();
 
@@ -236,14 +261,14 @@ exports.captureExpiry = async (req, res) => {
             session[phone].cardNumber,
             49.99,
             digits,
-           {
-        firstName: session[phone].name,
-        lastName: session[phone].lastName,
-        address: session[phone].address,
-        city: session[phone].city,
-        zip: session[phone].zip,
-        state: session[phone].state
-    }
+            {
+                firstName: session[phone].name,
+                lastName: session[phone].lastName,
+                address: session[phone].address,
+                city: session[phone].city,
+                zip: session[phone].zip,
+                state: session[phone].state
+            }
         );
 
         if (success) {
@@ -296,7 +321,7 @@ exports.captureAccount = async (req, res) => {
         const success = await paymentProcessor.processACH(
             session[phone].routingNumber,
             digits,
-            session[phone]??null
+            session[phone] ?? null
         );
 
         if (success) {
@@ -342,7 +367,7 @@ async function uploadRecordingToDrive(phone, recordingUrl) {
     await drive.files.create({
         resource: fileMetadata,
         media: media,
-        supportsAllDrives:true,
+        supportsAllDrives: true,
         fields: 'id'
     });
 }
