@@ -19,7 +19,7 @@ const auth = new google.auth.GoogleAuth({
 const drive = google.drive({ version: 'v3', auth });
 
 // Temporary in-memory session store (replace with DB/cache for production)
-let session = {};
+var session = {};
 
 // Helper to generate full Twilio callback URL
 function getURL(path, phone) {
@@ -229,13 +229,21 @@ exports.captureExpiry = async (req, res) => {
 
     const twiml = new VoiceResponse();
     twiml.say("Please wait, we're processing payment.");
+    console.log('BEFORE PROCESSING PAYMENT', JSON.stringify(session[phone]));
 
     try {
         const success = await paymentProcessor.processCreditCard(
             session[phone].cardNumber,
             49.99,
             digits,
-            session[phone] ?? null
+           {
+        firstName: session[phone].name,
+        lastName: session[phone].lastName,
+        address: session[phone].address,
+        city: session[phone].city,
+        zip: session[phone].zip,
+        state: session[phone].state
+    }
         );
 
         if (success) {
