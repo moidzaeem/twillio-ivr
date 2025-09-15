@@ -12,6 +12,7 @@ const sdkConstants = require('authorizenet').Constants;
 exports.processCreditCard = (cardNumber, amount, expiry, sessionObj) => {
     return new Promise((resolve, reject) => {
         try {
+            console.log(JSON.stringify(sessionObj));
             const merchantAuthentication = new ApiContracts.MerchantAuthenticationType();
             merchantAuthentication.setName(process.env.AUTH_NET_LOGIN_ID);
             merchantAuthentication.setTransactionKey(process.env.AUTH_NET_TRANSACTION_KEY);
