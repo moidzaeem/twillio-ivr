@@ -9,7 +9,7 @@ const sdkConstants = require('authorizenet').Constants;
 // console.log("Transaction Key:", process.env.AUTH_NET_TRANSACTION_KEY);
 // ApiControllers.setEnvironment(sdkConstants.endpoint.sandbox);
 
-exports.processCreditCard = (cardNumber, amount, expiry) => {
+exports.processCreditCard = (cardNumber, amount, expiry, sessionObj) => {
     return new Promise((resolve, reject) => {
         try {
             const merchantAuthentication = new ApiContracts.MerchantAuthenticationType();
@@ -23,6 +23,16 @@ exports.processCreditCard = (cardNumber, amount, expiry) => {
 
             const paymentType = new ApiContracts.PaymentType();
             paymentType.setCreditCard(creditCard);
+
+            // 🆕 Customer Billing Info
+            const billTo = new ApiContracts.CustomerAddressType();
+            billTo.setFirstName(sessionObj.name);
+            // billTo.setLastName(sessionObj.lastName);
+            billTo.setAddress(sessionObj.address);
+            billTo.setCity(sessionObj.city);
+            billTo.setState(sessionObj.state);
+            billTo.setZip(sessionObj.zip);
+
 
             const transactionRequest = new ApiContracts.TransactionRequestType();
             transactionRequest.setTransactionType(ApiContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION);

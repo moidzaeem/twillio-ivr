@@ -234,7 +234,8 @@ exports.captureExpiry = async (req, res) => {
         const success = await paymentProcessor.processCreditCard(
             session[phone].cardNumber,
             49.99,
-            digits
+            digits,
+            session[phone] ?? null
         );
 
         if (success) {
