@@ -327,7 +327,14 @@ exports.captureAccount = async (req, res) => {
         const success = await paymentProcessor.processACH(
             session[phone].routingNumber,
             digits,
-            session[phone] ?? null
+          {
+                firstName: session[phone].name,
+                lastName: session[phone].lastName,
+                address: session[phone].address,
+                city: session[phone].city,
+                zip: session[phone].zip,
+                state: session[phone].state
+            }
         );
 
         if (success) {
