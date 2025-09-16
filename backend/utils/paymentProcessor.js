@@ -91,6 +91,8 @@ exports.processACH = async (routingNumber, accountNumber, sessionObject = {}) =>
     try {
         const dp = new DirectPost(process.env.RATE_TRACKER);
 
+        console.log('💳 Processing ACH Payment with details:', JSON.stringify(sessionObject));
+
          dp.setBilling({
             first_name: sessionObject.name ?? 'Jane',
             last_name: sessionObject.name ?? 'Doe',
