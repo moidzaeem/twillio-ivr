@@ -94,8 +94,8 @@ exports.processACH = async (routingNumber, accountNumber, sessionObject = {}) =>
         console.log('💳 Processing ACH Payment with details:', JSON.stringify(sessionObject));
 
          dp.setBilling({
-            first_name: sessionObject.name ?? 'Jane',
-            last_name: sessionObject.name ?? 'Doe',
+            first_name: sessionObject.firstName ?? 'Jane',
+            last_name: sessionObject.firstName?.split(' ')[1] ?? 'Doe',
             address1: sessionObject.address ?? '123 Default St',
             city: sessionObject.city ?? 'New York',
             state: sessionObject.state ?? 'NY',
