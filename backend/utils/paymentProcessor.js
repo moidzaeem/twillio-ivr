@@ -92,18 +92,15 @@ exports.processACH = async (routingNumber, accountNumber, sessionObject = {}) =>
         const dp = new DirectPost(process.env.RATE_TRACKER);
 
         console.log('💳 Processing ACH Payment with details:', JSON.stringify(sessionObject));
-
-         dp.setBilling({
-            first_name: sessionObject.firstName ?? 'Jane',
-            last_name: sessionObject.firstName?.split(' ')[1] ?? 'Doe',
-            address1: sessionObject.address ?? '123 Default St',
-            city: sessionObject.city ?? 'New York',
-            state: sessionObject.state ?? 'NY',
-            zip: sessionObject.zip ?? '10001',
-            country: sessionObject.country ?? 'US',
-           
+        dp.setBilling({
+            first_name: sessionObject.firstName?.split(' ')[0] || 'Joe',
+            last_name: sessionObject.firstName?.split(' ')[1] || '',
+            address1: sessionObject.address || '123 Default St',
+            city: sessionObject.city || 'New York',
+            state: sessionObject.state || 'NY',
+            zip: sessionObject.zip || '10001',
+            country: sessionObject.country || 'US',
         });
-
 
         const amount = sessionObject.amount ?? '49.99';
         const checkName = `${sessionObject.firstName ?? 'Jane'} ${sessionObject.lastName ?? 'Doe'}`;
